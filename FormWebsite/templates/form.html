@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visitor Request Form</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/form.css') }}">
+    <style>
+        body, html {
+            background-image: url('{{ url_for('static', filename='assets/bg-img.png') }}');
+        }
+        .visitor-0 {
+            color: white; /* Change text color for Visitor 1 to white */
+        }
+    </style>
+    <script>
+        async function fetchManagersAndGates() {
+            try {
+                const response = await fetch('/api/managers_and_gates');
+                const data = await response.json();
+                populateForm(data);
+            } catch (error) {
+                console.error('Error fetching managers and gates:', error);
+            }
+        }
+
+        function populateForm(data) {
+            const managerSelect = document.getElementById('manager');
+
+            data.managers.forEach(manager => {
+                const option = document.createElement('option');
+                option.value = manager.id;
+                option.textContent = manager.name + " (" + manager.department + ")";
+                managerSelect.appendChild(option);
+            });
+        }
+
+        function updateVisitorFields() {
+            const visitorsContainer = document.getElementById('VisitorsContainer');
+            const numVisitors = document.getElementById('numVisitors').value;
+
+            visitorsContainer.innerHTML = '';
+
+            for (let i = 0; i < numVisitors; i++) {
+                const visitorDiv = document.createElement('div');
+                visitorDiv.classList.add(`visitor-${i}`);  // Add class for Visitor
+                visitorDiv.innerHTML = `
+                    <div>
+                        <h3>Visitor ${i + 1}:</h3>
+                        <div class="input-group">
+                            <div>
+                                <label for="firstName[${i}]">First Name:</label>
+                                <input type="text" name="firstName[${i}]" required>
+                            </div>
+                            <div>
+                                <label for="lastName[${i}]">Last Name:</label>
+                                <input type="text" name="lastName[${i}]" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <div>
+                                <label for="phoneNumber[${i}]">Phone Number:</label>
+                                <input type="text" name="phoneNumber[${i}]" required>
+                            </div>
+                            <div>
+                                <label for="idNumber[${i}]">ID/Iqama Number:</label>
+                                <input type="text" name="idNumber[${i}]" required>
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <div>
+                                <label for="email[${i}]">Email:</label>
+                                <input type="email" name="email[${i}]" required>
+                            </div>
+                            <div>
+                                <label for="idAttachment[${i}]">ID Attachment:</label>
+                                <input type="file" name="idAttachment[${i}]" required>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                visitorsContainer.appendChild(visitorDiv);
+            }
+        }
+
+        function addTimeSlot() {
+            const timeSlotContainer = document.getElementById('timeSlotsContainer');
+            const timeSlotDiv = document.createElement('div');
+            timeSlotDiv.classList.add('time-slot');
+
+            // Get today's date in YYYY-MM-DD format
+            const today = new Date().toISOString().split('T')[0];
+
+            timeSlotDiv.innerHTML = `
+                <label for="visitDate" style="margin-right: 5px;">Visit Date:</label>
+                <input type="date" name="visitDate[]" min="${today}" required style="margin-right: 10px;">
+                <label for="startTime" style="margin-right: 5px;">From:</label>
+                <select name="startTime[]" required style="margin-right: 10px;">
+                    <option value="07:00">07:00 AM</option>
+                    <option value="08:00">08:00 AM</option>
+                    <option value="09:00">09:00 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="11:00">11:00 AM</option>
+                    <option value="12:00">12:00 PM</option>
+                    <option value="13:00">01:00 PM</option>
+                    <option value="14:00">02:00 PM</option>
+                    <option value="15:00">03:00 PM</option>
+                    <option value="16:00">04:00 PM</option>
+                    <option value="17:00">05:00 PM</option>
+                </select>
+                <label for="endTime" style="margin-right: 5px;">To:</label>
+                <select name="endTime[]" required style="margin-right: 10px;">
+                    <option value="08:00">08:00 AM</option>
+                    <option value="09:00">09:00 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="11:00">11:00 AM</option>
+                    <option value="12:00">12:00 PM</option>
+                    <option value="13:00">01:00 PM</option>
+                    <option value="14:00">02:00 PM</option>
+                    <option value="15:00">03:00 PM</option>
+                    <option value="16:00">04:00 PM</option>
+                    <option value="17:00">05:00 PM</option>
+                    <option value="18:00">06:00 PM</option>
+                </select>
+                <button type="button" class="remove-time-slot" onclick="removeTimeSlot(this)">X</button>
+            `;
+            timeSlotContainer.appendChild(timeSlotDiv);
+        }
+
+        function removeTimeSlot(button) {
+            const timeSlotContainer = document.getElementById('timeSlotsContainer');
+            timeSlotContainer.removeChild(button.parentElement);
+        }
+
+        function validateForm(event) {
+            const timeSlots = document.querySelectorAll('#timeSlotsContainer .time-slot');
+            if (timeSlots.length === 0) {
+                alert('Please add at least one time slot.');
+                event.preventDefault(); // Prevent form submission
+            }
+
+            const visitorFiles = document.querySelectorAll('input[type="file"]');
+            for (const fileInput of visitorFiles) {
+                if (fileInput.files.length === 0) {
+                    alert('Please upload all required ID attachments.');
+                    event.preventDefault(); // Prevent form submission
+                    break;
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchManagersAndGates();
+            updateVisitorFields();
+            addTimeSlot();
+
+            document.getElementById('visitForm').addEventListener('submit', validateForm);
+        });
+    </script>
+</head>
+<body>
+    <div class="navbar">
+        <div class="logo">
+            <a href="{{ url_for('index') }}">
+                <img src="{{ url_for('static', filename='assets/cal.png') }}" alt="Logo">
+            </a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="left">
+            <h1>Visitor Request Form</h1>
+            <p>This Form will help the company to manage the system better</p>
+            <p>Schedule an appointment to visit the company by filling the fields and choosing a manager</p>
+        </div>
+        <div class="right">
+            <form id="visitForm" action="/submit" method="POST" enctype="multipart/form-data">
+                <div class="form-section">
+                    <label for="numVisitors">Choose the number of Visitors:</label><br>
+                    <input type="number" id="numVisitors" name="numVisitors" min="1" max="15" value="1" class="contact-inputs" onchange="updateVisitorFields()"><br><br>
+                </div>
+
+                <div class="form-section">
+                    <label for="manager">CHOOSE A MANAGER*</label><br>
+                    <select id="manager" name="manager" required></select><br><br>
+                </div>
+
+                <div class="form-section" id="VisitorsContainer"></div>
+                <div class="form-section" id="timeSlotsContainer">
+                    <label>Visit Time Slots:</label>
+                    <button type="button" onclick="addTimeSlot()">Add Time Slot</button>
+                </div>
+
+                <input type="hidden" name="status" value="Pending">
+
+                <div class="form-section">
+                    <button type="submit" id="submitButton">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

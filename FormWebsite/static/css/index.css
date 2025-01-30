@@ -1,0 +1,180 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Poppins', Arial, sans-serif;
+    background: url('../assets/BlackBG.jpeg') no-repeat center center fixed;
+    background-size: cover;
+    overflow-x: hidden;
+}
+
+.navbar {
+    width: 100%;
+    padding: 25px 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+    background-color: white;
+}
+
+.logo img {
+    height: 50px; 
+    width: 250px;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 90vh; /* Adjusted height to accommodate smaller main box */
+}
+
+.main-box {
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.914);
+    padding: 40px; /* Reduced padding */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border: 1px solid #c9c9c9;
+}
+
+.page-title {
+    font-size: 28px; /* Reduced font size */
+    color: #000;
+    font-weight: 600;
+    margin-bottom: 10px; /* Reduced margin */
+}
+
+.subtitle {
+    font-size: 14px; /* Reduced font size */
+    color: #3b3a3a;
+    margin-bottom: 25px; /* Reduced margin */
+}
+
+.choice-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px; /* Reduced gap between boxes */
+}
+
+.choice-box {
+    flex: 1 1 0;
+    max-width: 220px; /* Further reduced max width */
+    height: 250px; /* Further reduced height */
+    margin: 5px; /* Reduced margin */
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.choice-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    padding: 15px; /* Reduced padding */
+    background-color: white;
+    transition: transform 0.2s;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    border: 1px solid #c9c9c9;
+}
+
+.choice-image {
+    width: 60px; /* Further reduced icon size */
+    height: auto;
+}
+
+.choice-box:hover {
+    transform: scale(1.05);
+}
+
+.choice-title {
+    font-size: 1.2em; /* Reduced font size */
+    margin-top: 10px;
+    font-weight: 600;
+}
+
+.choice-description {
+    font-size: 0.85em; /* Reduced font size */
+    margin-top: 5px;
+    color: #555;
+}
+
+@media (max-width: 768px) {
+    .main-box {
+        padding: 15px; /* Reduced padding */
+    }
+
+    .choice-container {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .choice-box {
+        width: 45%;
+        max-width: 220px; /* Reduced max width */
+        margin: 5px; /* Reduced margin */
+    }
+}
+
+@media (max-width: 480px) {
+    .main-box {
+        padding: 10px; /* Reduced padding */
+    }
+
+    .page-title {
+        font-size: 24px; /* Reduced font size */
+    }
+
+    .subtitle {
+        font-size: 12px; /* Reduced font size */
+    }
+
+    .choice-container {
+        flex-direction: column;
+    }
+
+    .choice-box {
+        width: 100%;
+        max-width: 220px; /* Reduced max width */
+        margin: 5px auto; /* Reduced margin */
+    }
+
+    .choice-image {
+        width: 50px; /* Further reduced icon size */
+    }
+
+    .choice-title {
+        font-size: 16px; /* Reduced font size */
+    }
+
+    .choice-description {
+        font-size: 10px; /* Reduced font size */
+    }
+}
+
+.footer {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    text-align: center;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); /* Add shadow to the text */
+    font-size: 16px;
+}
+
+.footer a {
+    color: white;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    text-decoration: underline;
+}

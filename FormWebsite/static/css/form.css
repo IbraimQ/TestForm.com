@@ -1,0 +1,159 @@
+/* Base styles for all devices */
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-attachment: fixed;
+    background-size: cover;
+    overflow-x: hidden; /* Prevent horizontal overflow */
+}
+
+.navbar {
+    width: 100%;
+    background-color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: center; /* Center the logo */
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-sizing: border-box;
+}
+
+.logo img {
+    height: 60px;
+    width: auto;
+}
+
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 20px 5%;
+    background-color: rgba(0, 0, 0, 0.6);
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.left {
+    color: white;
+    max-width: 45%;
+}
+
+.right {
+    max-width: 45%;
+    width: 100%;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-top: 10px;
+    font-weight: bold;
+    color: white; /* Change label color to white */
+}
+
+.input-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px; /* Adjust gap as needed */
+    margin-top: 5px;
+}
+
+.input-group div {
+    flex: 1; /* Make both labels and inputs take up equal space */
+}
+
+.input-group input {
+    width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white; /* Change input background to white */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+input, select {
+    margin-top: 5px;
+    padding: 10px;
+    width: 100%; /* Make all inputs and selects full width */
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: white; /* Make input background white */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+}
+
+button {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #666767;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #3b3b3b;
+}
+
+.remove-time-slot {
+    background: none;
+    border: none;
+    color: red;
+    font-size: 20px;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.time-slot {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.time-slot input[type="date"],
+.time-slot input[type="time"] {
+    flex: 1;
+    margin-right: 10px;
+}
+
+div[class^="visitor-"] h3 {
+    color: white; /* Ensure all visitor headers have white text */
+}
+
+/* Media queries for responsiveness */
+
+/* Tablets */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .left, .right {
+        max-width: 100%;
+        width: 100%;
+    }
+}
+
+/* Phones */
+@media (max-width: 480px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .left, .right {
+        max-width: 100%;
+        width: 100%;
+    }
+    
+    input, select, button {
+        width: 100%;
+    }
+}

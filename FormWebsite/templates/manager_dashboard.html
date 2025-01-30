@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/manager_dashboard.css') }}">
+    <script>
+        let selectedSuggestionIndex = -1;
+        let activeFilters = { status: [], sort: [] };
+
+        function toggleFilter(element) {
+            const filterType = element.getAttribute('data-filter-type');
+            const filterValue = element.getAttribute('data-value');
+
+            if (filterType === 'status') {
+                toggleFilterValue(activeFilters.status, filterValue);
+            } else if (filterType === 'sort') {
+                toggleFilterValue(activeFilters.sort, filterValue);
+            }
+
+            updateFiltersDisplay();
+        }
+
+        function toggleFilterValue(filterArray, filterValue) {
+            const index = filterArray.indexOf(filterValue);
+            if (index === -1) {
+                filterArray.push(filterValue);
+            } else {
+                filterArray.splice(index, 1);
+            }
+        }
+
+        function updateFiltersDisplay() {
+            document.querySelectorAll('.dropdown-menu li').forEach(item => {
+                const filterType = item.getAttribute('data-filter-type');
+                const filterValue = item.getAttribute('data-value');
+                if ((filterType === 'status' && activeFilters.status.includes(filterValue)) ||
+                    (filterType === 'sort' && activeFilters.sort.includes(filterValue))) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            applyFilters();
+        }
+
+        function applyFilters() {
+            let queryParams = [];
+
+            let searchValue = document.getElementById('search').value;
+            if (searchValue) {
+                queryParams.push(`search=${searchValue}`);
+            }
+
+            if (activeFilters.status.length > 0) {
+                queryParams.push(`status=${activeFilters.status.join(',')}`);
+            }
+            if (activeFilters.sort.length > 0) {
+                queryParams.push(`sort=${activeFilters.sort.join(',')}`);
+            }
+
+            let queryString = queryParams.join('&');
+            let baseUrl = new URL(window.location.href);
+            baseUrl.pathname = '{{ url_for("manager_dashboard") }}';
+            baseUrl.search = queryString;
+            window.location.href = baseUrl.href;
+        }
+
+        function showSuggestions(query) {
+            const suggestions = document.getElementById('suggestions');
+
+            if (!/^\d*$/.test(query) || query.length === 0) {
+                suggestions.innerHTML = '';
+                suggestions.classList.remove('visible');
+                return;
+            }
+
+            fetch(`/suggestions?query=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    suggestions.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach((item, index) => {
+                            let listItem = document.createElement('li');
+                            listItem.textContent = item;
+                            listItem.onclick = () => selectSuggestion(item);
+                            listItem.setAttribute('data-index', index);
+                            suggestions.appendChild(listItem);
+                        });
+                        suggestions.classList.add('visible');
+                    } else {
+                        suggestions.classList.remove('visible');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching suggestions:', error);
+                });
+        }
+
+        function handleKeyDown(event) {
+            const suggestions = document.getElementById('suggestions').getElementsByTagName('li');
+            if (event.key === 'ArrowDown') {
+                selectedSuggestionIndex = (selectedSuggestionIndex + 1) % suggestions.length;
+                updateActiveSuggestion(suggestions);
+            } else if (event.key === 'ArrowUp') {
+                selectedSuggestionIndex = (selectedSuggestionIndex - 1 + suggestions.length) % suggestions.length;
+                updateActiveSuggestion(suggestions);
+            } else if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent form submission
+                if (selectedSuggestionIndex > -1 && suggestions[selectedSuggestionIndex]) {
+                    selectSuggestion(suggestions[selectedSuggestionIndex].textContent);
+                }
+            }
+        }
+
+        function showManagerDropdown(button) {
+    if (!button) {
+        console.error("Button element is undefined.");
+        return;
+    }
+
+    // Find the parent container
+    var parentContainer = button.closest('.details-row');
+    if (!parentContainer) {
+        console.error("Parent container is not found.");
+        return;
+    }
+
+    // Find the existing manager name element and hide it
+    var managerNameElement = parentContainer.querySelector('.manager-name');
+    if (managerNameElement) {
+        managerNameElement.style.display = 'none';
+    } else {
+        console.error("Manager name element is not found.");
+    }
+
+    // Find the dropdown for manager selection and show it
+    var managerDropdownElement = parentContainer.querySelector('.manager-dropdown');
+    if (managerDropdownElement) {
+        managerDropdownElement.style.display = 'block';
+    } else {
+        console.error("Manager dropdown element is not found.");
+    }
+
+    // Show the confirm and cancel buttons
+    var confirmButton = parentContainer.querySelector('.confirm-button');
+    var cancelButton = parentContainer.querySelector('.cancel-button');
+    if (confirmButton) {
+        confirmButton.style.display = 'inline-block';
+    }
+    if (cancelButton) {
+        cancelButton.style.display = 'inline-block';
+    }
+}
+
+function hideManagerDropdown(button) {
+    if (!button) {
+        console.error("Button element is undefined.");
+        return;
+    }
+
+    // Find the parent container
+    var parentContainer = button.closest('.details-row');
+    if (!parentContainer) {
+        console.error("Parent container is not found.");
+        return;
+    }
+
+    // Hide the dropdown for manager selection
+    var managerDropdownElement = parentContainer.querySelector('.manager-dropdown');
+    if (managerDropdownElement) {
+        managerDropdownElement.style.display = 'none';
+    } else {
+        console.error("Manager dropdown element is not found.");
+    }
+
+    // Show the existing manager name element
+    var managerNameElement = parentContainer.querySelector('.manager-name');
+    if (managerNameElement) {
+        managerNameElement.style.display = 'block';
+    } else {
+        console.error("Manager name element is not found.");
+    }
+
+    // Hide the confirm and cancel buttons
+    var confirmButton = parentContainer.querySelector('.confirm-button');
+    var cancelButton = parentContainer.querySelector('.cancel-button');
+    if (confirmButton) {
+        confirmButton.style.display = 'none';
+    }
+    if (cancelButton) {
+        cancelButton.style.display = 'none';
+    }
+}
+
+
+
+
+
+
+function assignNewManager(visitRequestID) {
+    // Debugging: Print visitRequestID
+    console.log("Visit Request ID:", visitRequestID);
+
+    // Get the selected manager ID from the dropdown
+    var newManagerID = document.getElementById('managerDropdown-' + visitRequestID).value;
+
+    // Debugging: Print newManagerID
+    console.log("New Manager ID:", newManagerID);
+
+    // Send an AJAX request to the server to update the manager
+    fetch(`/update_manager/${visitRequestID}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ new_manager_id: newManagerID })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Manager updated successfully.');
+            location.reload(); // Reload the page or update the UI as needed
+        } else {
+            alert('Error updating manager: ' + data.message);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+
+
+
+
+
+
+        function updateActiveSuggestion(suggestions) {
+            Array.from(suggestions).forEach((suggestion, index) => {
+                if (index === selectedSuggestionIndex) {
+                    suggestion.classList.add('active');
+                    suggestion.scrollIntoView({ block: 'nearest', inline: 'start' });
+                } else {
+                    suggestion.classList.remove('active');
+                }
+            });
+        }
+
+        function selectSuggestion(value) {
+            document.getElementById('search').value = value;
+            document.getElementById('suggestions').innerHTML = '';
+            document.getElementById('suggestions').classList.remove('visible');
+            selectedSuggestionIndex = -1;
+            applyFilters();
+        }
+
+        function clearSearch() {
+            document.getElementById('search').value = '';
+            document.getElementById('suggestions').innerHTML = '';
+            selectedSuggestionIndex = -1;
+            applyFilters();
+        }
+
+        function toggleDetails(element) {
+            const detailsRow = element.closest('tr').nextElementSibling;
+            if (detailsRow && detailsRow.classList.contains('details-row')) {
+                if (detailsRow.style.display === 'none' || detailsRow.style.display === '') {
+                    detailsRow.style.display = 'table-row';
+                } else {
+                    detailsRow.style.display = 'none';
+                }
+            }
+        }
+
+        function updateVisitStatus(visitRequestID, status) {
+            // Get the selected gate number from the dropdown
+            const gateSelect = document.getElementById(`gateSelect-${visitRequestID}`);
+            const gateID = gateSelect.value;
+
+            // Ensure a gate is selected if the status is 'Approved'
+            if (status === 'Approved' && !gateID) {
+                alert('Please select a gate before approving the visit.');
+                return;
+            }
+
+            fetch(`/update_visit_status/${visitRequestID}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ status: status, gate_id: gateID })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Status updated successfully');
+                    location.reload(); // Reload the page or update the UI as needed
+                } else {
+                    alert('Error updating status: ' + data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('search').addEventListener('keydown', handleKeyDown);
+            document.querySelectorAll('.dropdown-menu li').forEach(item => {
+                item.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    toggleFilter(item);
+                });
+            });
+
+            window.addEventListener('click', function(event) {
+                const dropdown = document.querySelector('.dropdown');
+                if (!dropdown.contains(event.target)) {
+                    document.querySelector('.dropdown-menu').style.display = 'none';
+                } else {
+                    document.querySelector('.dropdown-menu').style.display = 'block';
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <img src="{{ url_for('static', filename='assets/cal.png') }}" alt="Cameron Logo" class="logo">
+            <hr class="sidebar-separator">
+            <a href="{{ url_for('index') }}" class="nav-link">
+                <i class="fas fa-home"></i>
+                HOME
+            </a>
+            <a href="javascript:history.back()" class="nav-link">
+                <i class="fas fa-arrow-left"></i>
+                BACK
+            </a>
+        </div>
+        <div class="main-box">
+            <div class="header">
+                <h1>Manager Dashboard</h1>
+                <div class="summary-sort">
+                    <div class="summary">
+                        <div class="summary-item">
+                            <div class="summary-title">Total Forms</div>
+                            <div class="summary-value">{{ total_forms }}</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-title">Pending</div>
+                            <div class="summary-value">{{ pending_forms }}</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-title">Approved</div>
+                            <div class="summary-value">{{ approved_forms }}</div>
+                        </div>
+                    </div>
+                    <div class="search-sort">
+                        <form id="search-form" method="GET" action="{{ url_for('manager_dashboard') }}">
+                            <div class="search-bar" style="position: relative;">
+                                <input type="text" id="search" name="search" placeholder="Search..." oninput="showSuggestions(this.value)" autocomplete="off">
+                                <button type="button" class="clear-button" onclick="clearSearch()" aria-label="Clear search">×</button>
+                                <ul id="suggestions" class="suggestions-list"></ul>
+                            </div>
+                        </form>
+                        <div class="dropdown">
+                            <button type="button" class="dropdown-button">Filter</button>
+                            <ul class="dropdown-menu">
+                                <li data-filter-type="sort" data-value="newest"><a>Newest</a></li>
+                                <li data-filter-type="sort" data-value="oldest"><a>Oldest</a></li>
+                                <li data-filter-type="status" data-value="Pending"><a>Pending</a></li>
+                                <li data-filter-type="status" data-value="Approved"><a>Approved</a></li>
+                                <li data-filter-type="status" data-value="Rejected"><a>Rejected</a></li>
+                                <li data-filter-type="status" data-value="Checked In"><a>Checked In</a></li> 
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Visit Request ID</th>
+                        <th>Status</th>
+                        <th>The Number of Visitors</th>
+                        <th>Form Submission Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for detail in visit_details %}
+                        <tr class="summary-row" onclick="toggleDetails(this)">
+                            <td>{{ detail.visit.VisitRequestID }}</td>
+                            <td>{{ detail.visit.Status }}</td>
+                            <td>{{ detail.visitors|length }}</td>
+                            <td>
+                                {% if detail.visit.SubmissionTime %}
+                                    {{ detail.visit.SubmissionTime.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="show-details">Show Details <i class="fas fa-chevron-down"></i></span>
+                            </td>                            
+                        </tr>
+                        <tr class="details-row" style="display:none;">
+                            <td colspan="5">
+                                <div class="details">
+                                    <h3>Manager Details:</h3>
+                                    <ul>
+                                        <li class="manager-name">Name: {{ detail.manager_name }}</li>
+                                        <li>Department: {{ detail.manager_department }}</li>
+                                        <li>Edit: <a href="#" onclick="showManagerDropdown(this)">Edit</a></li>
+                                        {% if detail.visit.LastEdited %}
+                                            <li>Last edited: {{ detail.visit.LastEdited.strftime('%I:%M %p') }}</li>
+                                        {% endif %}
+                                        <li class="manager-dropdown" style="display:none;">
+                                            <select id="managerDropdown-{{ detail.visit.VisitRequestID }}">
+                                                {% for manager in managers %}
+                                                    {% if manager.id != detail.visit.ManagerID %}
+                                                        <option value="{{ manager.id }}">{{ manager.name }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </select>
+                                            <button class="confirm-button" style="display:none;" onclick="assignNewManager({{ detail.visit.VisitRequestID }})">Confirm</button>
+                                            <button class="cancel-button" style="display:none;" onclick="hideManagerDropdown(this)">Cancel</button>
+                                        </li>
+
+                                        
+                                        {% if detail.visit.LastEdited %}
+                                        <li>Last edited: {{ detail.visit.LastEdited.strftime('%I:%M %p') }}</li>
+                                        {% endif %}
+                                    </ul>
+                                    
+                                    <h3>Gate Security Details:</h3>
+                                    <ul>
+                                        <li>Name: {{ detail.gate_security_name }}</li>
+                                    </ul>
+                                    
+
+                                    <h3>Visitors:</h3>
+                                    <ul>
+                                        {% for visitor in detail.visitors %}
+                                            <li>{{ visitor.FirstName }} {{ visitor.LastName }} ({{ visitor.Email }}) - ID/iqama: {{ visitor.IDNumber }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                    
+                                    <h3>Location and Gate:</h3>
+                                    <ul>
+                                        <li>
+                                            <label for="gateSelect-{{ detail.visit.VisitRequestID }}">Assign Gate:</label>
+                                            <select id="gateSelect-{{ detail.visit.VisitRequestID }}" {% if detail.visit.Status != 'Pending' %}disabled{% endif %}>
+                                                <option value="">Select a gate</option>
+                                                {% for gate in gates %}
+                                                    <option value="{{ gate.id }}" {% if detail.visit.GateID == gate.id %}selected{% endif %}>{{ gate.gate_number }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </li>
+                                    </ul>
+                                
+                                    <h3>Visit Times:</h3>
+                                    <ul>
+                                        {% for time in detail.visit_times %}
+                                            <li>{{ time.VisitDate }} from {{ time.StartTime }} to {{ time.EndTime }}</li>
+                                        {% endfor %}
+                                    </ul>
+
+                                    {% if detail.visit.CheckedInTime %}
+                                    <h3>Checked In Time:</h3>
+                                    <ul>
+                                        <li>{{ detail.visit.CheckedInTime.strftime('%Y-%m-%d %H:%M:%S') }}</li>
+                                    </ul>
+                                    {% endif %}
+
+                                    <div class="button-group">
+                                        {% if detail.visit.Status == 'Pending' %}
+                                            <button class="approve-button" onclick="updateVisitStatus({{ detail.visit.VisitRequestID }}, 'Approved')">Approve</button>
+                                            <button class="reject-button" onclick="updateVisitStatus({{ detail.visit.VisitRequestID }}, 'Rejected')">Reject</button>
+                                        {% endif %}
+                                    </div>
+                                    
+                                </div>
+                                
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                {% for p in paginated_visits.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+                    {% if p %}
+                        {% if p == paginated_visits.page %}
+                            <strong class="active">{{ p }}</strong>
+                        {% else %}
+                            <a href="{{ url_for('manager_dashboard', sort=request.args.get('sort'), page=p) }}">{{ p }}</a>
+                        {% endif %}
+                    {% else %}
+                        <span>...</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
